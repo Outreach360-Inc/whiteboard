@@ -546,5 +546,43 @@
 
   })();
   </script>
+
+  <h1>Shared Whiteboard</h1>
+<textarea id="pad" placeholder="Type here..."></textarea>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import { getFirestore, doc, onSnapshot, setDoc } 
+    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  // Your config (the JSON version you pasted earlier)
+  const firebaseConfig = {
+    apiKey: "AIzaSyABlXMKOF4r3fpHc88HSZJpKi8xmbfA5Vc",
+    authDomain: "whiteboard-dca62.firebaseapp.com",
+    projectId: "whiteboard-dca62",
+    storageBucket: "whiteboard-dca62.firebasestorage.app",
+    messagingSenderId: "96159410011",
+    appId: "1:96159410011:web:862f67e322c2b1a14bdc7e",
+    measurementId: "G-234ZS5T0V2"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+  const ref = doc(db, "boards", "demo"); // one shared "room"
+
+  const pad = document.getElementById("pad");
+
+  // Listen for live changes
+  onSnapshot(ref, (snap) => {
+    const data = snap.data();
+    if (data) pad.value = data.text;
+  });
+
+  // Save as you type
+  pad.addEventListener("input", () => {
+    setDoc(ref, { text: pad.value }, { merge: true });
+  });
+</script>
+
 </body>
 </html>

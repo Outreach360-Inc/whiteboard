@@ -15,11 +15,11 @@
   .title{font-weight:700;font-size:18px;}
   .badge{font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:8px;background:#f1f5f9;color:#0f172a;}
   button, .btn{font-size:14px;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);}
-  button:hover{box-shadow:0 2px 6px rgba(0,0,0,.08);}
+  button:hover{box-shadow:0 2px 6px rgba(0,0,0,.08);} 
   .toolbar{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
   .tool-active{background:#111827;color:#fff;}
   #boardWrap{max-width:1100px;margin:0 auto;padding:0 16px 24px;position:relative;}
-  #board{width:100%;height:70vh;border:1px solid var(--border);border-radius:16px;background:var(--bg);box-shadow:0 3px 12px rgba(0,0,0,.05);}
+  #board{width:100%;height:70vh;border:1px solid var(--border);border-radius:16px;background:var(--bg);box-shadow:0 3px 12px rgba(0,0,0,.05);} 
   #embedsLayer{position:absolute;left:16px;right:16px; top:0; height:70vh; pointer-events:none;}
   .embedBox{position:absolute; width:320px; height:180px; background:#000; border:1px solid var(--border); border-radius:12px; overflow:hidden; pointer-events:auto;}
   .embedBox .handle{position:absolute; right:6px; bottom:6px; width:16px; height:16px; background:#fff; border:1px solid var(--border); border-radius:4px; cursor:nwse-resize;}
@@ -49,6 +49,7 @@
         <div id="boardTag" class="badge">Board: …</div>
         <button id="copyLinkBtn">🔗 Copy Share Link</button>
         <button id="realtimeBtn">🟢 Realtime ON</button>
+        <button id="stopBtn" title="Stop realtime" style="display:none">⛔ Realtime OFF</button>
         <button id="configBtn" title="Paste Firebase web config JSON">⚙️ Firebase</button>
         <button id="diagBtn" title="Toggle diagnostics">🧪 Diagnostics</button>
       </div>
@@ -99,32 +100,11 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window['pdfjsLib']) { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }</script>
 
-  <!-- Firebase compat for simplicity -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore-compat.js"></script>
+  <!-- App logic using Firebase ESM SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  <!-- Diagnostics overlay -->
-  <div id="diag" class="diag">
-    <div class="row"><div>URL</div><div class="mono" id="diagUrl"></div></div>
-    <div class="row"><div>Board</div><div class="mono" id="diagBoard"></div></div>
-    <div class="row"><div>Project</div><div class="mono" id="diagProject"></div></div>
-    <div class="row"><div>Doc Path</div><div class="mono" id="diagDoc"></div></div>
-    <div class="row"><div>Status</div><div id="diagStatus" class="mono">—</div></div>
-    <div class="row"><div>Last Update</div><div class="mono" id="diagStamp">—</div></div>
-    <div class="row"><div>Last Writer</div><div class="mono" id="diagWriter">—</div></div>
-    <div style="margin-top:8px" class="mono">
-      If you see <span class="err">permission-denied</span>, open Firestore → Rules and (temporarily) allow reads/writes while testing:
-      <pre>rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} { allow read, write: if true; }
-  }
-}</pre>
-    </div>
-  </div>
-
-  <script>
-  (function(){
     const $ = (sel)=>document.querySelector(sel);
     const statusEl = $("#status");
     const boardTag = $("#boardTag");
@@ -138,8 +118,6 @@ service cloud.firestore {
     let hiColor = $("#hiColor").value;
     let brushWidth = +$("#width").value;
     let zoom = 1;
-    let isSyncOn = false;
-    let isApplyingRemote = false;
     let unsubscribe = null;
 
     // ---- Sizing
@@ -167,13 +145,15 @@ service cloud.firestore {
     const boardId = getOrCreateBoardId();
     boardTag.textContent = "Board: " + boardId;
 
-    // ---- Local storage key
+    // ---- Local storage keys
     const LKEY = "o360_board_" + boardId;
     const CFGKEY = "o360_firebase_config";
 
     // ---- Undo / Redo
     const undoStack = [];
     const redoStack = [];
+    let isApplyingRemote = false;
+
     function pushHistory(){
       const state = canvas.toDatalessJSON();
       const embeds = serializeEmbeds();
@@ -214,7 +194,7 @@ service cloud.firestore {
       saveTimer = setTimeout(()=>{
         pushHistory();
         saveLocal();
-        if (isSyncOn) syncToCloud();
+        syncToCloud();
       }, 250);
     }
     canvas.on("object:added", onChanged);
@@ -330,6 +310,7 @@ service cloud.firestore {
 
     // ---- Embeds: YouTube or audio
     function createEmbedBox(kind, src, x=60, y=60, w=320, h=180){
+      const layer = embedsLayer;
       const box = document.createElement("div");
       box.className = "embedBox";
       box.style.left = x+"px"; box.style.top = y+"px"; box.style.width = w+"px"; box.style.height = h+"px";
@@ -358,7 +339,7 @@ service cloud.firestore {
       });
       window.addEventListener("mousemove", (e)=>{
         if (!dragging) return;
-        const layerRect = embedsLayer.getBoundingClientRect();
+        const layerRect = layer.getBoundingClientRect();
         let nx = e.clientX - layerRect.left - offsetX;
         let ny = e.clientY - layerRect.top - offsetY + window.scrollY;
         box.style.left = Math.max(0, nx) + "px";
@@ -384,11 +365,11 @@ service cloud.firestore {
       box.tabIndex = 0;
       box.addEventListener("keydown", (e)=>{
         if (e.key === "Delete" || e.key === "Backspace"){
-          embedsLayer.removeChild(box); onChanged();
+          layer.removeChild(box); onChanged();
         }
       });
 
-      embedsLayer.appendChild(box);
+      layer.appendChild(box);
       return box;
     }
 
@@ -418,12 +399,12 @@ service cloud.firestore {
       if (/youtu\.be|youtube\.com/.test(url)){
         // Convert to embed
         let vid = null;
-        const m1 = url.match(/v=([\\w-]+)/); if (m1) vid = m1[1];
-        const m2 = url.match(/youtu\\.be\\/([\\w-]+)/); if (m2) vid = m2[1];
+        const m1 = url.match(/v=([\w-]+)/); if (m1) vid = m1[1];
+        const m2 = url.match(/youtu\.be\/([\w-]+)/); if (m2) vid = m2[1];
         if (!vid){ alert("Could not find a video ID in that URL."); return; }
         const embed = "https://www.youtube.com/embed/" + vid;
         createEmbedBox("youtube", embed, 80, 80);
-      } else if (/\\.mp3($|\\?)/.test(url)){
+      } else if (/\.mp3($|\?)/.test(url)){
         createEmbedBox("audio", url, 80, 80, 320, 120);
       } else {
         alert("Supported right now: YouTube links or direct .mp3 links.");
@@ -504,15 +485,11 @@ service cloud.firestore {
 
     // ---- Share link
     $("#copyLinkBtn").onclick = async ()=>{
-      try{
-        await navigator.clipboard.writeText(location.href);
-        statusEl.textContent = "Link copied";
-      }catch(e){
-        alert("Copy failed. You can copy the URL from the address bar.");
-      }
+      try{ await navigator.clipboard.writeText(location.href); statusEl.textContent = "Link copied"; }
+      catch{ statusEl.textContent = "Copy failed"; }
     };
 
-    // ---- Firebase realtime (compat)
+    // ---- Firebase realtime (ESM)
     let fire = { app:null, db:null };
     const clientId = Math.random().toString(36).slice(2);
 
@@ -520,75 +497,68 @@ service cloud.firestore {
       try{ return JSON.parse(localStorage.getItem(CFGKEY) || "null"); }catch(_){ return null; }
     }
     function haveFirebaseConfig(){
-      return (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) || (getSavedConfig() && getSavedConfig().apiKey);
-    }
-    function useConfig(){
-      return window.FIREBASE_CONFIG || getSavedConfig();
+      const cfg = getSavedConfig();
+      return !!(cfg && cfg.apiKey && cfg.projectId);
     }
 
     $("#configBtn").onclick = ()=>{
-      const sample='{\n  "apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."\n}';
+      const sample='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}';
       const input = prompt("Paste your Firebase web config JSON (Project settings → Your apps):", sample);
       if (!input) return;
-      try{
-        const cfg = JSON.parse(input);
-        window.FIREBASE_CONFIG = cfg;
-        localStorage.setItem(CFGKEY, JSON.stringify(cfg));
-        alert("Config saved. Now click Realtime ON.");
-      }catch(e){
-        alert("That wasn't valid JSON. Try again.");
-      }
+      try{ const cfg = JSON.parse(input); localStorage.setItem(CFGKEY, JSON.stringify(cfg)); alert("Config saved. Now click Realtime ON."); }
+      catch(e){ alert("That wasn't valid JSON. Try again."); }
     };
 
+    let currentRef = null;
     async function startRealtime(){
-      if (!haveFirebaseConfig()){ alert("Firebase config not set. Click ⚙️ Firebase to paste your config first."); return; }
-      if (!firebase || !firebase.firestore){ alert("Firebase SDK not loaded."); return; }
-      if (!fire.app){
-        fire.app = firebase.initializeApp(useConfig());
-        fire.db = firebase.firestore();
-      }
-      const ref = fire.db.collection("boards").doc(boardId);
+      try{
+        if (!haveFirebaseConfig()){ alert("Firebase config not set. Click ⚙️ Firebase to paste your config first."); return; }
+        if (!fire.app){ fire.app = initializeApp(getSavedConfig()); }
+        if (!fire.db){ fire.db = getFirestore(fire.app); }
 
-      // Diagnostics fields
-      $("#diagDoc").textContent = "boards/" + boardId;
-      $("#diagProject").textContent = (fire.app && fire.app.options && fire.app.options.projectId) || "(unknown)";
+        // Subscribe
+        currentRef = doc(fire.db, "boards", boardId);
+        if (unsubscribe) unsubscribe();
+        unsubscribe = onSnapshot(currentRef, (snap)=>{
+          const d = snap.data();
+          if (!d) return; // first writer will seed below
+          const current = JSON.stringify({ state: canvas.toDatalessJSON(), embeds: serializeEmbeds() });
+          const incoming = JSON.stringify({ state: d.data || d.state, embeds: d.embeds || [] });
+          if (current !== incoming){
+            applyState({ state: d.data || d.state, embeds: d.embeds || [] });
+          }
+          $("#diagStatus").innerHTML = '<span class="ok">Listening</span>';
+          $("#diagStamp").textContent = d.updatedAt ? new Date(d.updatedAt).toISOString() : "—";
+          $("#diagWriter").textContent = d.updatedBy || "—";
+          statusEl.textContent = "Realtime ON";
+          $("#realtimeBtn").style.display = "none";
+          $("#stopBtn").style.display = "inline-block";
+        }, (e)=>{
+          $("#diagStatus").innerHTML = '<span class="err">'+e.message+'</span>';
+          console.error(e);
+        });
 
-      // Seed if empty
-      const snap = await ref.get();
-      if (!snap.exists){
-        await ref.set({ data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId });
-      }
+        // Seed
+        await setDoc(currentRef, { data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId }, { merge:true });
 
-      // Listen
-      if (unsubscribe) unsubscribe();
-      unsubscribe = ref.onSnapshot((doc)=>{
-        const d = doc.data();
-        if (!d) return;
-        const current = JSON.stringify({ state: canvas.toDatalessJSON(), embeds: serializeEmbeds() });
-        const incoming = JSON.stringify({ state: d.data, embeds: d.embeds || [] });
-        if (current !== incoming){
-          applyState({ state: d.data, embeds: d.embeds || [] });
-        }
-        $("#diagStatus").innerHTML = '<span class="ok">Listening</span>';
-        $("#diagStamp").textContent = d.updatedAt ? new Date(d.updatedAt).toISOString() : "—";
-        $("#diagWriter").textContent = d.updatedBy || "—";
-      }, (e)=>{
+      }catch(e){
+        statusEl.textContent = "Realtime error";
         $("#diagStatus").innerHTML = '<span class="err">'+e.message+'</span>';
         console.error(e);
-      });
+      }
+    }
 
-      isSyncOn = true;
-      statusEl.textContent = "Realtime ON";
-
-      // Initial push so others get your state
-      await ref.set({ data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId }, { merge:true });
+    function stopRealtime(){
+      if (unsubscribe){ unsubscribe(); unsubscribe = null; }
+      statusEl.textContent = "Realtime OFF";
+      $("#realtimeBtn").style.display = "inline-block";
+      $("#stopBtn").style.display = "none";
     }
 
     async function syncToCloud(){
-      if (!isSyncOn || !fire.db) return;
+      if (!currentRef) return; // only when realtime started
       try{
-        const ref = fire.db.collection("boards").doc(boardId);
-        await ref.set({ data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId }, { merge:true });
+        await setDoc(currentRef, { data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId }, { merge:true });
         statusEl.textContent = "Synced";
         $("#diagStamp").textContent = new Date().toISOString();
         $("#diagWriter").textContent = clientId;
@@ -600,26 +570,42 @@ service cloud.firestore {
     }
 
     $("#realtimeBtn").onclick = startRealtime;
+    $("#stopBtn").onclick = stopRealtime;
 
-    // ---- Diagnostics toggle
-    const diag = $("#diag");
+    // ---- Diagnostics overlay
+    const diag = document.createElement('div');
+    diag.id = 'diag'; diag.className = 'diag';
+    diag.innerHTML = `
+      <div class="row"><div>URL</div><div class="mono" id="diagUrl"></div></div>
+      <div class="row"><div>Board</div><div class="mono" id="diagBoard"></div></div>
+      <div class="row"><div>Project</div><div class="mono" id="diagProject"></div></div>
+      <div class="row"><div>Doc Path</div><div class="mono" id="diagDoc"></div></div>
+      <div class="row"><div>Status</div><div id="diagStatus" class="mono">—</div></div>
+      <div class="row"><div>Last Update</div><div class="mono" id="diagStamp">—</div></div>
+      <div class="row"><div>Last Writer</div><div class="mono" id="diagWriter">—</div></div>
+      <div style="margin-top:8px" class="mono">
+        If you see <span class="err">permission-denied</span>, open Firestore → Rules and (temporarily) allow reads/writes while testing:
+        <pre>rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} { allow read, write: if true; }
+  }
+}</pre>
+      </div>`;
+    document.body.appendChild(diag);
+
     $("#diagBtn").onclick = ()=>{
       diag.classList.toggle("open");
       $("#diagUrl").textContent = location.href;
       $("#diagBoard").textContent = boardId;
       $("#diagDoc").textContent = "boards/" + boardId;
-      $("#diagProject").textContent = (fire.app && fire.app.options && fire.app.options.projectId) || "(not initialized)";
+      const cfg = getSavedConfig();
+      $("#diagProject").textContent = (cfg && cfg.projectId) ? cfg.projectId : "(not configured)";
     };
 
-    // ---- Auto-open realtime if config already saved
-    (function autoStart(){
-      $("#diagUrl").textContent = location.href;
-      if (haveFirebaseConfig()){
-        // do not auto-start to avoid surprising writes; user can click Realtime ON
-      }
-    })();
+    // ---- Auto-prefill diagnostics (URL)
+    $("#diagUrl").textContent = location.href;
 
-  })();
   </script>
 </body>
 </html>

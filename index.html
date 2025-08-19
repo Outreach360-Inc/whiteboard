@@ -3,42 +3,29 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Outreach360 Whiteboard</title>
+<title>Outreach360 Whiteboard — Auto-Realtime</title>
 <style>
-  :root{
-    --bg:#f8fafc; --panel:#ffffff; --border:#e5e7eb; --text:#0f172a; --muted:#64748b;
-    --accent:#111827; --note:#fef3c7; --noteBorder:#f59e0b;
-  }
-  html,body{margin:0;height:100%;background:var(--bg);font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, 'Helvetica Neue', Arial;}
-  .topbar{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--border);z-index:20;}
-  .wrap{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
-  .title{font-weight:700;font-size:18px;}
-  .badge{font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:8px;background:#f1f5f9;color:#0f172a;}
-  button, .btn{font-size:14px;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04);}
-  button:hover{box-shadow:0 2px 6px rgba(0,0,0,.08);} 
-  .toolbar{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
-  .tool-active{background:#111827;color:#fff;}
-  #boardWrap{max-width:1100px;margin:0 auto;padding:0 16px 24px;position:relative;}
-  #board{width:100%;height:70vh;border:1px solid var(--border);border-radius:16px;background:var(--bg);box-shadow:0 3px 12px rgba(0,0,0,.05);} 
-  #embedsLayer{position:absolute;left:16px;right:16px; top:0; height:70vh; pointer-events:none;}
-  .embedBox{position:absolute; width:320px; height:180px; background:#000; border:1px solid var(--border); border-radius:12px; overflow:hidden; pointer-events:auto;}
-  .embedBox .handle{position:absolute; right:6px; bottom:6px; width:16px; height:16px; background:#fff; border:1px solid var(--border); border-radius:4px; cursor:nwse-resize;}
-  .row{display:flex;align-items:center;gap:8px;}
-  .muted{color:var(--muted);font-size:12px;}
-  input[type=color]{vertical-align:middle; height:28px; width:36px; border:1px solid var(--border); border-radius:6px; background:#fff;}
-  input[type=range]{vertical-align:middle;}
-  .footer{color:var(--muted);text-align:center;font-size:12px;padding:16px;}
-
-  /* Diagnostics overlay */
-  .diag{position:fixed; right:16px; bottom:16px; width:360px; max-width:90vw;
-        background:#fff; border:1px solid var(--border); border-radius:12px; padding:12px 14px;
-        box-shadow:0 8px 24px rgba(0,0,0,.1); display:none;}
-  .diag.open{display:block;}
-  .diag .row{display:grid; grid-template-columns:130px 1fr; gap:8px; align-items:center;}
-  .ok{color:#0a7;}
-  .warn{color:#b50;}
-  .err{color:#c00; white-space:pre-wrap;}
-  .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; font-size:12px;}
+  :root{ --bg:#f8fafc; --panel:#ffffff; --border:#e5e7eb; --text:#0f172a; --muted:#64748b; --note:#fef3c7; --noteBorder:#f59e0b; }
+  html,body{margin:0;height:100%;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial}
+  .topbar{position:sticky;top:0;background:var(--panel);border-bottom:1px solid var(--border);z-index:20}
+  .wrap{max-width:1100px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+  .title{font-weight:700;font-size:18px}
+  .badge{font-size:12px;padding:3px 8px;border:1px solid var(--border);border-radius:8px;background:#f1f5f9;color:#0f172a}
+  button{font-size:14px;padding:8px 12px;border:1px solid var(--border);background:#fff;border-radius:12px;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+  button:hover{box-shadow:0 2px 6px rgba(0,0,0,.08)}
+  .toolbar{max-width:1100px;margin:0 auto;padding:10px 16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .tool-active{background:#111827;color:#fff}
+  #boardWrap{max-width:1100px;margin:0 auto;padding:0 16px 24px;position:relative}
+  #board{width:100%;height:70vh;border:1px solid var(--border);border-radius:16px;background:var(--bg);box-shadow:0 3px 12px rgba(0,0,0,.05)}
+  #embedsLayer{position:absolute;left:16px;right:16px; top:0; height:70vh; pointer-events:none}
+  .embedBox{position:absolute;width:320px;height:180px;background:#000;border:1px solid var(--border);border-radius:12px;overflow:hidden;pointer-events:auto}
+  .embedBox .handle{position:absolute;right:6px;bottom:6px;width:16px;height:16px;background:#fff;border:1px solid var(--border);border-radius:4px;cursor:nwse-resize}
+  .row{display:flex;align-items:center;gap:8px}
+  .muted{color:var(--muted);font-size:12px}
+  input[type=color]{vertical-align:middle;height:28px;width:36px;border:1px solid var(--border);border-radius:6px;background:#fff}
+  input[type=range]{vertical-align:middle}
+  .footer{color:var(--muted);text-align:center;font-size:12px;padding:16px}
+  .ok{color:#0a7}.err{color:#c00}.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
 </style>
 </head>
 <body>
@@ -48,17 +35,15 @@
         <div class="title">Outreach360 Whiteboard</div>
         <div id="boardTag" class="badge">Board: …</div>
         <button id="copyLinkBtn">🔗 Copy Share Link</button>
-        <button id="realtimeBtn">🟢 Realtime ON</button>
-        <button id="stopBtn" title="Stop realtime" style="display:none">⛔ Realtime OFF</button>
-        <button id="configBtn" title="Paste Firebase web config JSON">⚙️ Firebase</button>
-        <button id="diagBtn" title="Toggle diagnostics">🧪 Diagnostics</button>
+        <div id="status" class="muted">Connecting…</div>
       </div>
       <div class="row">
-        <button id="zoomOut">-</button>
+        <div id="proj" class="badge">Project: —</div>
+        <div id="doc" class="badge">Doc: —</div>
         <div id="zoomLabel" class="badge">100%</div>
+        <button id="zoomOut">-</button>
         <button id="zoomIn">+</button>
         <button id="zoomReset">Reset</button>
-        <div id="status" class="muted">Ready</div>
       </div>
     </div>
   </div>
@@ -93,518 +78,105 @@
     <div id="embedsLayer"></div>
   </div>
 
-  <div class="footer">Tip: Use “🔗 Copy Share Link” to invite others. Click ⚙️ Firebase then 🟢 Realtime ON to collaborate. Use 🧪 Diagnostics if something seems off.</div>
+  <div class="footer">Share the exact link (includes <code>#b=…</code>). This build auto-connects to Firebase and starts realtime immediately.</div>
 
-  <!-- Libraries via CDN -->
   <script src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
   <script>if (window['pdfjsLib']) { pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }</script>
 
-  <!-- App logic using Firebase ESM SDK -->
   <script type="module">
+    // --- Firebase ESM + Anonymous Auth (auto)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import { getFirestore, doc, onSnapshot, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    const $ = (sel)=>document.querySelector(sel);
-    const statusEl = $("#status");
-    const boardTag = $("#boardTag");
-    const embedsLayer = $("#embedsLayer");
-    const canvasEl = $("#board");
-    const canvas = new fabric.Canvas(canvasEl, { backgroundColor: "#f8fafc", preserveObjectStacking:true });
-
-    // ---- UI state
-    let activeTool = "select";
-    let color = $("#color").value;
-    let hiColor = $("#hiColor").value;
-    let brushWidth = +$("#width").value;
-    let zoom = 1;
-    let unsubscribe = null;
-
-    // ---- Sizing
-    function fitCanvas(){
-      const wrap = $("#boardWrap");
-      const rect = wrap.getBoundingClientRect();
-      canvas.setWidth(rect.width - 32);
-      canvas.setHeight(parseInt(getComputedStyle($("#embedsLayer")).height));
-      canvas.renderAll();
-    }
-    window.addEventListener("resize", fitCanvas);
-
-    // ---- Board ID via URL hash (supports #b=... or #room=...)
-    function getOrCreateBoardId(){
-      const h = location.hash.replace("#","");
-      const params = new URLSearchParams(h);
-      let id = params.get("b") || params.get("room");
-      if (!id){
-        id = Math.random().toString(36).slice(2,10);
-        const p = new URLSearchParams(); p.set("b", id);
-        location.hash = p.toString();
-      }
-      return id;
-    }
-    const boardId = getOrCreateBoardId();
-    boardTag.textContent = "Board: " + boardId;
-
-    // ---- Local storage keys
-    const LKEY = "o360_board_" + boardId;
-    const CFGKEY = "o360_firebase_config";
-
-    // ---- Undo / Redo
-    const undoStack = [];
-    const redoStack = [];
-    let isApplyingRemote = false;
-
-    function pushHistory(){
-      const state = canvas.toDatalessJSON();
-      const embeds = serializeEmbeds();
-      undoStack.push({state, embeds});
-      if (undoStack.length > 50) undoStack.shift();
-      redoStack.length = 0;
-    }
-    function applyState(snap){
-      isApplyingRemote = true;
-      canvas.loadFromJSON(snap.state, () => {
-        isApplyingRemote = false;
-        canvas.renderAll();
-        loadEmbedsFromSerialized(snap.embeds || []);
-        saveLocal();
-      });
-    }
-    function undo(){
-      if (undoStack.length < 2) return;
-      const current = undoStack.pop();
-      redoStack.push(current);
-      const prev = undoStack[undoStack.length - 1];
-      applyState(prev);
-    }
-    function redo(){
-      if (!redoStack.length) return;
-      const next = redoStack.pop();
-      undoStack.push(next);
-      applyState(next);
-    }
-    $("#undoBtn").onclick = undo;
-    $("#redoBtn").onclick = redo;
-
-    // ---- Change listeners (debounced)
-    let saveTimer = null;
-    function onChanged(){
-      if (isApplyingRemote) return;
-      if (saveTimer) clearTimeout(saveTimer);
-      saveTimer = setTimeout(()=>{
-        pushHistory();
-        saveLocal();
-        syncToCloud();
-      }, 250);
-    }
-    canvas.on("object:added", onChanged);
-    canvas.on("object:modified", onChanged);
-    canvas.on("object:removed", onChanged);
-
-    // ---- Initial canvas
-    fitCanvas();
-    const existing = localStorage.getItem(LKEY);
-    if (existing){
-      try{
-        const obj = JSON.parse(existing);
-        canvas.loadFromJSON(obj.state || existing, ()=>{
-          canvas.renderAll();
-          loadEmbedsFromSerialized(obj.embeds || []);
-          pushHistory();
-        });
-      }catch(e){
-        canvas.loadFromJSON(existing, ()=>{ canvas.renderAll(); pushHistory(); });
-      }
-    } else {
-      const note = new fabric.Textbox("Welcome! Use the toolbar to draw, add shapes/text/stickies. Click ⚙️ Firebase, then 🟢 Realtime ON, then share this link.", {
-        left: 60, top: 60, width: 520, fontSize: 18, fill: "#111827", backgroundColor: "#fff7ed", padding: 10
-      });
-      canvas.add(note); pushHistory();
-    }
-
-    // ---- Tools
-    document.querySelectorAll(".toolBtn").forEach(btn=>{
-      btn.onclick = ()=>{
-        document.querySelectorAll(".toolBtn").forEach(b=>b.classList.remove("tool-active"));
-        btn.classList.add("tool-active");
-        activeTool = btn.dataset.tool;
-        canvas.isDrawingMode = (activeTool === "pen" || activeTool === "highlighter");
-        if (canvas.isDrawingMode){
-          const brush = new fabric.PencilBrush(canvas);
-          brush.width = brushWidth;
-          brush.color = activeTool==="highlighter" ? (hiColor + "77") : color;
-          canvas.freeDrawingBrush = brush;
-        }
-      };
-    });
-    $("#color").oninput = (e)=>{ color = e.target.value; if (canvas.isDrawingMode && activeTool==="pen") canvas.freeDrawingBrush.color = color; };
-    $("#hiColor").oninput = (e)=>{ hiColor = e.target.value; if (canvas.isDrawingMode && activeTool==="highlighter") canvas.freeDrawingBrush.color = hiColor + "77"; };
-    $("#width").oninput = (e)=>{ brushWidth = +e.target.value; if (canvas.isDrawingMode) canvas.freeDrawingBrush.width = brushWidth; };
-
-    // ---- Shapes & items
-    $("#rectBtn").onclick = ()=>{
-      const r = new fabric.Rect({ left:100, top:100, width:220, height:140, fill:"#e5e7eb", stroke:color, strokeWidth:2, rx:10, ry:10 });
-      canvas.add(r);
-    };
-    $("#circleBtn").onclick = ()=>{
-      const c = new fabric.Circle({ left:150, top:150, radius:60, fill:"#e5e7eb", stroke:color, strokeWidth:2 });
-      canvas.add(c);
-    };
-    $("#arrowBtn").onclick = ()=>{
-      const line = new fabric.Line([200,200,320,240], { stroke:color, strokeWidth:3 });
-      const tri = new fabric.Triangle({ left:320, top:240, width:18, height:18, fill:color, angle:45, originX:"center", originY:"center" });
-      const g = new fabric.Group([line,tri], { left:200, top:200 });
-      canvas.add(g);
-    };
-    $("#textBtn").onclick = ()=>{
-      const t = new fabric.Textbox("Type here", { left:120, top:120, fontSize:22, fill:color, editable:true, width:300 });
-      canvas.add(t);
-    };
-    $("#stickyBtn").onclick = ()=>{
-      const rect = new fabric.Rect({ width:220, height:160, fill:"var(--note)", rx:12, ry:12, stroke:"var(--noteBorder)", strokeWidth:2, originX:"center", originY:"center" });
-      const t = new fabric.Textbox("Sticky note", { width:180, fontSize:20, fill:"#111827", originX:"center", originY:"center" });
-      const g = new fabric.Group([rect,t], { left:200, top:200 });
-      canvas.add(g);
+    // Embed your public web config (safe to expose)
+    const firebaseConfig = {
+      apiKey: "AIzaSyABlXMKOF4r3fpHc88HSZJpKi8xmbfA5Vc",
+      authDomain: "whiteboard-dca62.firebaseapp.com",
+      projectId: "whiteboard-dca62",
+      storageBucket: "whiteboard-dca62.firebasestorage.app",
+      messagingSenderId: "96159410011",
+      appId: "1:96159410011:web:862f67e322c2b1a14bdc7e",
+      measurementId: "G-234ZS5T0V2"
     };
 
-    // ---- Upload image
-    $("#imgBtn").onclick = ()=>{
-      const input = document.createElement("input");
-      input.type = "file"; input.accept = "image/*";
-      input.onchange = (e)=>{
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = (ev)=>{
-          fabric.Image.fromURL(ev.target.result, (img)=>{
-            img.set({ left:200, top:200, scaleX:0.5, scaleY:0.5 });
-            canvas.add(img);
-          });
-        };
-        reader.readAsDataURL(file);
-      };
-      input.click();
-    };
+    const $ = (s)=>document.querySelector(s);
+    const statusEl = $("#status"), boardTag = $("#boardTag"), projEl = $("#proj"), docEl=$("#doc");
 
-    // ---- Upload PDF first page
-    $("#pdfBtn").onclick = async ()=>{
-      if (!window['pdfjsLib']) { alert("PDF support not available."); return; }
-      const input = document.createElement("input");
-      input.type = "file"; input.accept = "application/pdf";
-      input.onchange = async (e)=>{
-        const file = e.target.files && e.target.files[0];
-        if (!file) return;
-        const buf = await file.arrayBuffer();
-        const pdf = await pdfjsLib.getDocument({data:buf}).promise;
-        const page = await pdf.getPage(1);
-        const viewport = page.getViewport({ scale: 1.5 });
-        const c = document.createElement("canvas");
-        const ctx = c.getContext("2d");
-        c.width = viewport.width; c.height = viewport.height;
-        await page.render({ canvasContext: ctx, viewport }).promise;
-        const dataUrl = c.toDataURL("image/png");
-        fabric.Image.fromURL(dataUrl, (img)=>{ img.set({left:100, top:100}); canvas.add(img); });
-      };
-      input.click();
-    };
-
-    // ---- Embeds: YouTube or audio
-    function createEmbedBox(kind, src, x=60, y=60, w=320, h=180){
-      const layer = embedsLayer;
-      const box = document.createElement("div");
-      box.className = "embedBox";
-      box.style.left = x+"px"; box.style.top = y+"px"; box.style.width = w+"px"; box.style.height = h+"px";
-
-      if (kind === "youtube"){
-        const iframe = document.createElement("iframe");
-        iframe.width = "100%"; iframe.height = "100%";
-        iframe.src = src; iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-        iframe.allowFullscreen = true;
-        box.appendChild(iframe);
-      } else if (kind === "audio"){
-        const audio = document.createElement("audio");
-        audio.controls = true; audio.src = src; audio.style.width = "100%"; audio.style.height = "48px"; audio.style.marginTop="calc(50% - 24px)";
-        box.appendChild(audio);
-      }
-
-      const handle = document.createElement("div");
-      handle.className = "handle"; box.appendChild(handle);
-
-      // Dragging
-      let dragging = false, offsetX=0, offsetY=0;
-      box.addEventListener("mousedown", (e)=>{
-        if (e.target === handle) return;
-        dragging = true; offsetX = e.offsetX; offsetY = e.offsetY;
-        box.style.outline = "2px solid #3b82f6";
-      });
-      window.addEventListener("mousemove", (e)=>{
-        if (!dragging) return;
-        const layerRect = layer.getBoundingClientRect();
-        let nx = e.clientX - layerRect.left - offsetX;
-        let ny = e.clientY - layerRect.top - offsetY + window.scrollY;
-        box.style.left = Math.max(0, nx) + "px";
-        box.style.top = Math.max(0, ny) + "px";
-      });
-      window.addEventListener("mouseup", ()=>{ if (dragging){ dragging=false; box.style.outline="none"; onChanged(); }});
-
-      // Resizing
-      let resizing=false, startX=0, startY=0, startW=0, startH=0;
-      handle.addEventListener("mousedown", (e)=>{
-        e.stopPropagation(); resizing=true; startX=e.clientX; startY=e.clientY;
-        startW=box.offsetWidth; startH=box.offsetHeight;
-      });
-      window.addEventListener("mousemove", (e)=>{
-        if (!resizing) return;
-        const dx = e.clientX - startX, dy = e.clientY - startY;
-        box.style.width = Math.max(160, startW + dx) + "px";
-        box.style.height = Math.max(90, startH + dy) + "px";
-      });
-      window.addEventListener("mouseup", ()=>{ if (resizing){ resizing=false; onChanged(); }});
-
-      // Delete with Delete key
-      box.tabIndex = 0;
-      box.addEventListener("keydown", (e)=>{
-        if (e.key === "Delete" || e.key === "Backspace"){
-          layer.removeChild(box); onChanged();
-        }
-      });
-
-      layer.appendChild(box);
-      return box;
+    // Room from URL (#b= or #room=). Default stable "main" so links always match.
+    function getBoardId(){
+      const p = new URLSearchParams(location.hash.replace(/^#/, ""));
+      return p.get("b") || p.get("room") || "main";
     }
-
-    function serializeEmbeds(){
-      const list = [];
-      embedsLayer.querySelectorAll(".embedBox").forEach(box=>{
-        const iframe = box.querySelector("iframe");
-        const audio = box.querySelector("audio");
-        let kind = iframe ? "youtube" : (audio ? "audio" : "unknown");
-        let src = iframe ? iframe.src : (audio ? audio.src : "");
-        list.push({
-          kind, src,
-          x: parseInt(box.style.left||"0"), y: parseInt(box.style.top||"0"),
-          w: parseInt(box.style.width||"320"), h: parseInt(box.style.height||"180")
-        });
-      });
-      return list;
+    function ensureHash(id){
+      const url = new URL(location.href); url.hash = `b=${encodeURIComponent(id)}`; history.replaceState({}, "", url);
     }
-    function loadEmbedsFromSerialized(list){
-      embedsLayer.innerHTML = "";
-      list.forEach(e=> createEmbedBox(e.kind, e.src, e.x, e.y, e.w, e.h));
-    }
+    const boardId = getBoardId(); ensureHash(boardId); boardTag.textContent = "Board: "+boardId;
 
-    $("#embedBtn").onclick = ()=>{
-      const url = prompt("Paste a YouTube link (https://...) or an .mp3 URL:");
-      if (!url) return;
-      if (/youtu\.be|youtube\.com/.test(url)){
-        // Convert to embed
-        let vid = null;
-        const m1 = url.match(/v=([\w-]+)/); if (m1) vid = m1[1];
-        const m2 = url.match(/youtu\.be\/([\w-]+)/); if (m2) vid = m2[1];
-        if (!vid){ alert("Could not find a video ID in that URL."); return; }
-        const embed = "https://www.youtube.com/embed/" + vid;
-        createEmbedBox("youtube", embed, 80, 80);
-      } else if (/\.mp3($|\?)/.test(url)){
-        createEmbedBox("audio", url, 80, 80, 320, 120);
-      } else {
-        alert("Supported right now: YouTube links or direct .mp3 links.");
-      }
-      onChanged();
-    };
+    // Canvas setup
+    const canvas = new fabric.Canvas(document.getElementById("board"), { backgroundColor: "#f8fafc", preserveObjectStacking:true });
+    const embedsLayer = document.getElementById("embedsLayer");
+    const LKEY = "o360_board_"+boardId;
 
-    // ---- Clear board
-    $("#clearBtn").onclick = ()=>{
-      if (!confirm("Clear everything from this board?")) return;
-      canvas.clear();
-      canvas.setBackgroundColor("#f8fafc", canvas.renderAll.bind(canvas));
-      embedsLayer.innerHTML = "";
-      pushHistory(); saveLocal();
-    };
+    function fitCanvas(){ const rect = document.getElementById("boardWrap").getBoundingClientRect(); canvas.setWidth(rect.width-32); canvas.setHeight(parseInt(getComputedStyle(embedsLayer).height)); canvas.renderAll(); }
+    window.addEventListener("resize", fitCanvas); fitCanvas();
 
-    // ---- Export / Import
-    $("#pngBtn").onclick = ()=>{
-      const data = canvas.toDataURL({ format:"png", multiplier:2 });
-      const a = document.createElement("a");
-      a.href = data; a.download = "o360-board-" + boardId + ".png"; a.click();
-    };
-    $("#jsonBtn").onclick = ()=>{
-      const data = JSON.stringify({ state: canvas.toDatalessJSON(), embeds: serializeEmbeds() });
-      const blob = new Blob([data], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = "o360-board-" + boardId + ".json"; a.click();
-      URL.revokeObjectURL(url);
-    };
-    $("#importBtn").onclick = ()=>{
-      const input = document.createElement("input");
-      input.type="file"; input.accept="application/json";
-      input.onchange = async (e)=>{
-        const f = e.target.files && e.target.files[0];
-        if (!f) return;
-        const text = await f.text();
-        const obj = JSON.parse(text);
-        isApplyingRemote = true;
-        canvas.loadFromJSON(obj.state, ()=>{
-          isApplyingRemote = false; canvas.renderAll();
-          loadEmbedsFromSerialized(obj.embeds || []);
-          pushHistory(); saveLocal();
-        });
-      };
-      input.click();
-    };
+    // Minimal drawing tools
+    let activeTool = "select"; let color = document.getElementById("color").value; let hiColor = document.getElementById("hiColor").value; let brushWidth = +document.getElementById("width").value; let zoom=1;
+    document.querySelectorAll(".toolBtn").forEach(btn=>{ btn.onclick=()=>{ document.querySelectorAll(".toolBtn").forEach(b=>b.classList.remove("tool-active")); btn.classList.add("tool-active"); activeTool=btn.dataset.tool; canvas.isDrawingMode = (activeTool==="pen"||activeTool==="highlighter"); if (canvas.isDrawingMode){ const b=new fabric.PencilBrush(canvas); b.width=brushWidth; b.color= activeTool==="highlighter"? (hiColor+"77"): color; canvas.freeDrawingBrush=b; }}});
+    document.getElementById("color").oninput=(e)=>{ color=e.target.value; if (canvas.isDrawingMode && activeTool==="pen") canvas.freeDrawingBrush.color=color; };
+    document.getElementById("hiColor").oninput=(e)=>{ hiColor=e.target.value; if (canvas.isDrawingMode && activeTool==="highlighter") canvas.freeDrawingBrush.color=hiColor+"77"; };
+    document.getElementById("width").oninput=(e)=>{ brushWidth=+e.target.value; if (canvas.isDrawingMode) canvas.freeDrawingBrush.width=brushWidth; };
 
-    // ---- Zoom
-    function setZoom(z){
-      zoom = Math.min(3, Math.max(0.3, z));
-      canvas.setZoom(zoom);
-      $("#zoomLabel").textContent = Math.round(zoom*100) + "%";
-    }
-    $("#zoomIn").onclick = ()=> setZoom(zoom+0.1);
-    $("#zoomOut").onclick = ()=> setZoom(zoom-0.1);
-    $("#zoomReset").onclick = ()=> setZoom(1);
+    document.getElementById("rectBtn").onclick=()=>{ canvas.add(new fabric.Rect({ left:100, top:100, width:220, height:140, fill:"#e5e7eb", stroke:color, strokeWidth:2, rx:10, ry:10 })); };
+    document.getElementById("circleBtn").onclick=()=>{ canvas.add(new fabric.Circle({ left:150, top:150, radius:60, fill:"#e5e7eb", stroke:color, strokeWidth:2 })); };
+    document.getElementById("arrowBtn").onclick=()=>{ const line=new fabric.Line([200,200,320,240],{stroke:color,strokeWidth:3}); const tri=new fabric.Triangle({left:320,top:240,width:18,height:18,fill:color,angle:45,originX:"center",originY:"center"}); canvas.add(new fabric.Group([line,tri],{left:200,top:200})); };
+    document.getElementById("textBtn").onclick=()=>{ canvas.add(new fabric.Textbox("Type here",{ left:120, top:120, fontSize:22, fill:color, editable:true, width:300 })); };
+    document.getElementById("stickyBtn").onclick=()=>{ const rect=new fabric.Rect({ width:220, height:160, fill:"var(--note)", rx:12, ry:12, stroke:"var(--noteBorder)", strokeWidth:2, originX:"center", originY:"center" }); const t=new fabric.Textbox("Sticky note",{ width:180, fontSize:20, fill:"#111827", originX:"center", originY:"center" }); canvas.add(new fabric.Group([rect,t],{ left:200, top:200 })); };
 
-    // ---- Delete selected / Undo-Redo keys
-    window.addEventListener("keydown", (e)=>{
-      if (e.key === "Delete" || e.key === "Backspace"){
-        const active = canvas.getActiveObjects();
-        if (active.length){
-          active.forEach(o=>canvas.remove(o));
-          canvas.discardActiveObject(); canvas.requestRenderAll(); onChanged();
-        }
-      }
-      if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="z"){ e.preventDefault(); undo(); }
-      if ((e.ctrlKey||e.metaKey) && (e.key.toLowerCase()==="y" || (e.shiftKey && e.key.toLowerCase()==="z"))){ e.preventDefault(); redo(); }
-    });
+    document.getElementById("pngBtn").onclick=()=>{ const data=canvas.toDataURL({format:"png",multiplier:2}); const a=document.createElement("a"); a.href=data; a.download=`o360-${boardId}.png`; a.click(); };
+    document.getElementById("jsonBtn").onclick=()=>{ const blob=new Blob([JSON.stringify({ state:canvas.toDatalessJSON(), embeds:[] })],{type:"application/json"}); const url=URL.createObjectURL(blob); const a=document.createElement("a"); a.href=url; a.download=`o360-${boardId}.json`; a.click(); URL.revokeObjectURL(url); };
 
-    // ---- Save locally
-    function saveLocal(){
-      const payload = JSON.stringify({ state: canvas.toDatalessJSON(), embeds: serializeEmbeds() });
-      localStorage.setItem(LKEY, payload);
-      statusEl.textContent = "Saved locally";
-    }
+    document.getElementById("undoBtn").onclick=()=>document.execCommand('undo');
+    document.getElementById("redoBtn").onclick=()=>document.execCommand('redo');
 
-    // ---- Share link
-    $("#copyLinkBtn").onclick = async ()=>{
-      try{ await navigator.clipboard.writeText(location.href); statusEl.textContent = "Link copied"; }
-      catch{ statusEl.textContent = "Copy failed"; }
-    };
+    function setZoom(z){ zoom=Math.min(3,Math.max(0.3,z)); canvas.setZoom(zoom); document.getElementById("zoomLabel").textContent=Math.round(zoom*100)+"%"; }
+    document.getElementById("zoomIn").onclick=()=>setZoom(zoom+0.1);
+    document.getElementById("zoomOut").onclick=()=>setZoom(zoom-0.1);
+    document.getElementById("zoomReset").onclick=()=>setZoom(1);
 
-    // ---- Firebase realtime (ESM)
-    let fire = { app:null, db:null };
-    const clientId = Math.random().toString(36).slice(2);
+    document.getElementById("clearBtn").onclick=()=>{ if (!confirm("Clear everything from this board?")) return; canvas.clear(); canvas.setBackgroundColor("#f8fafc", canvas.renderAll.bind(canvas)); saveLocal(); pushToCloud(); };
 
-    function getSavedConfig(){
-      try{ return JSON.parse(localStorage.getItem(CFGKEY) || "null"); }catch(_){ return null; }
-    }
-    function haveFirebaseConfig(){
-      const cfg = getSavedConfig();
-      return !!(cfg && cfg.apiKey && cfg.projectId);
-    }
+    document.getElementById("copyLinkBtn").onclick=async()=>{ try{ await navigator.clipboard.writeText(location.href); statusEl.textContent="Link copied"; }catch{ statusEl.textContent="Copy failed"; } };
 
-    $("#configBtn").onclick = ()=>{
-      const sample='{"apiKey":"...","authDomain":"...","projectId":"...","storageBucket":"...","messagingSenderId":"...","appId":"..."}';
-      const input = prompt("Paste your Firebase web config JSON (Project settings → Your apps):", sample);
-      if (!input) return;
-      try{ const cfg = JSON.parse(input); localStorage.setItem(CFGKEY, JSON.stringify(cfg)); alert("Config saved. Now click Realtime ON."); }
-      catch(e){ alert("That wasn't valid JSON. Try again."); }
-    };
+    function saveLocal(){ localStorage.setItem(LKEY, JSON.stringify({ state: canvas.toDatalessJSON() })); }
+    const existing = localStorage.getItem(LKEY); if (existing){ try{ const obj=JSON.parse(existing); canvas.loadFromJSON(obj.state,()=>canvas.renderAll()); }catch{} }
 
-    let currentRef = null;
-    async function startRealtime(){
-      try{
-        if (!haveFirebaseConfig()){ alert("Firebase config not set. Click ⚙️ Firebase to paste your config first."); return; }
-        if (!fire.app){ fire.app = initializeApp(getSavedConfig()); }
-        if (!fire.db){ fire.db = getFirestore(fire.app); }
+    // --- Firebase init + anonymous sign-in + realtime (auto)
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    try { await signInAnonymously(auth); } catch(e) { /* ignore if already signed-in */ }
+    const db = getFirestore(app);
 
-        // Subscribe
-        currentRef = doc(fire.db, "boards", boardId);
-        if (unsubscribe) unsubscribe();
-        unsubscribe = onSnapshot(currentRef, (snap)=>{
-          const d = snap.data();
-          if (!d) return; // first writer will seed below
-          const current = JSON.stringify({ state: canvas.toDatalessJSON(), embeds: serializeEmbeds() });
-          const incoming = JSON.stringify({ state: d.data || d.state, embeds: d.embeds || [] });
-          if (current !== incoming){
-            applyState({ state: d.data || d.state, embeds: d.embeds || [] });
-          }
-          $("#diagStatus").innerHTML = '<span class="ok">Listening</span>';
-          $("#diagStamp").textContent = d.updatedAt ? new Date(d.updatedAt).toISOString() : "—";
-          $("#diagWriter").textContent = d.updatedBy || "—";
-          statusEl.textContent = "Realtime ON";
-          $("#realtimeBtn").style.display = "none";
-          $("#stopBtn").style.display = "inline-block";
-        }, (e)=>{
-          $("#diagStatus").innerHTML = '<span class="err">'+e.message+'</span>';
-          console.error(e);
-        });
+    projEl.textContent = `Project: ${app.options.projectId}`;
+    const ref = doc(db, "boards", boardId);
+    docEl.textContent = `Doc: boards/${boardId}`;
 
-        // Seed
-        await setDoc(currentRef, { data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId }, { merge:true });
+    // Apply remote updates
+    let applying=false;
+    onSnapshot(ref, (snap)=>{
+      const d = snap.data();
+      if (!d) return;
+      if (applying) return;
+      applying = true;
+      canvas.loadFromJSON(d.data || d.state || {}, ()=>{ canvas.renderAll(); applying=false; saveLocal(); statusEl.innerHTML='<span class="ok">Live</span>'; });
+    }, (err)=>{ statusEl.innerHTML = `<span class="err">${err.message}</span>`; });
 
-      }catch(e){
-        statusEl.textContent = "Realtime error";
-        $("#diagStatus").innerHTML = '<span class="err">'+e.message+'</span>';
-        console.error(e);
-      }
-    }
-
-    function stopRealtime(){
-      if (unsubscribe){ unsubscribe(); unsubscribe = null; }
-      statusEl.textContent = "Realtime OFF";
-      $("#realtimeBtn").style.display = "inline-block";
-      $("#stopBtn").style.display = "none";
-    }
-
-    async function syncToCloud(){
-      if (!currentRef) return; // only when realtime started
-      try{
-        await setDoc(currentRef, { data: canvas.toDatalessJSON(), embeds: serializeEmbeds(), updatedAt: Date.now(), updatedBy: clientId }, { merge:true });
-        statusEl.textContent = "Synced";
-        $("#diagStamp").textContent = new Date().toISOString();
-        $("#diagWriter").textContent = clientId;
-      }catch(e){
-        statusEl.textContent = "Sync error";
-        $("#diagStatus").innerHTML = '<span class="err">'+e.message+'</span>';
-        console.error(e);
-      }
-    }
-
-    $("#realtimeBtn").onclick = startRealtime;
-    $("#stopBtn").onclick = stopRealtime;
-
-    // ---- Diagnostics overlay
-    const diag = document.createElement('div');
-    diag.id = 'diag'; diag.className = 'diag';
-    diag.innerHTML = `
-      <div class="row"><div>URL</div><div class="mono" id="diagUrl"></div></div>
-      <div class="row"><div>Board</div><div class="mono" id="diagBoard"></div></div>
-      <div class="row"><div>Project</div><div class="mono" id="diagProject"></div></div>
-      <div class="row"><div>Doc Path</div><div class="mono" id="diagDoc"></div></div>
-      <div class="row"><div>Status</div><div id="diagStatus" class="mono">—</div></div>
-      <div class="row"><div>Last Update</div><div class="mono" id="diagStamp">—</div></div>
-      <div class="row"><div>Last Writer</div><div class="mono" id="diagWriter">—</div></div>
-      <div style="margin-top:8px" class="mono">
-        If you see <span class="err">permission-denied</span>, open Firestore → Rules and (temporarily) allow reads/writes while testing:
-        <pre>rules_version = '2';
-service cloud.firestore {
-  match /databases/{database}/documents {
-    match /{document=**} { allow read, write: if true; }
-  }
-}</pre>
-      </div>`;
-    document.body.appendChild(diag);
-
-    $("#diagBtn").onclick = ()=>{
-      diag.classList.toggle("open");
-      $("#diagUrl").textContent = location.href;
-      $("#diagBoard").textContent = boardId;
-      $("#diagDoc").textContent = "boards/" + boardId;
-      const cfg = getSavedConfig();
-      $("#diagProject").textContent = (cfg && cfg.projectId) ? cfg.projectId : "(not configured)";
-    };
-
-    // ---- Auto-prefill diagnostics (URL)
-    $("#diagUrl").textContent = location.href;
+    // Push local changes (debounced)
+    let t; canvas.on("object:added", changed); canvas.on("object:modified", changed); canvas.on("object:removed", changed);
+    function changed(){ if (applying) return; clearTimeout(t); t=setTimeout(pushToCloud, 220); }
+    async function pushToCloud(){ try{ await setDoc(ref, { data: canvas.toDatalessJSON(), updatedAt: Date.now() }, { merge:true }); statusEl.textContent = "Synced"; } catch(e){ statusEl.innerHTML = `<span class=err>${e.message}</span>`; } }
 
   </script>
 </body>
